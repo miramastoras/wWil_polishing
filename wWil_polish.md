@@ -71,11 +71,9 @@ wWil_Nanopore_assembly  all     1099602 1114097 98.6989
 ```
 QV estimate is 24.523, which means an error every 283 bases
 
+#### Busco gene completeness:
 
-- merqury for QV
-    - find optimal k size for bacteria
-    - downsample illumina reads to 45x
-- gene completeness / busco
+from paper: BUSCO17 v5.1.1 was used with enterobacterales_odb10 database
 
 ### Step 2: Run multiple polishing tools:
 
@@ -138,6 +136,4 @@ docker run -it -u `id -u`:`id -g` -v /private/groups:/private/groups -v /private
 
 wWil_Wolbachia_chromosome       54950   1268440 25.3045 0.00294813
 ```
-## 2. SV polishing
-
-Run illumina variant caller and nanopore SV caller
+## 2. Check for any SVs that need polishing
