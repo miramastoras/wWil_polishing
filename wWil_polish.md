@@ -75,6 +75,37 @@ QV estimate is 24.523, which means an error every 283 bases
 
 from paper: BUSCO17 v5.1.1 was used with enterobacterales_odb10 database
 
+```
+docker run --rm -u `id -u`:`id -g` \
+    -v /private/groups:/private/groups \
+    -v /private/groups/patenlab/mira/wWil_polishing/busco/unpolished:/busco_wd \
+    ezlabgva/busco:v5.7.0_cv1 busco \
+    --mode genome \
+    -i /private/groups/patenlab/mira/wWil_polishing/data/wWil_Nanopore_assembly.fasta \
+    -c 16 \
+    -l bacteria_odb10
+```
+Results:
+```
+***** Results: *****
+
+	C:42.7%[S:42.7%,D:0.0%],F:37.1%,M:20.2%,n:124
+	53	Complete BUSCOs (C)
+	53	Complete and single-copy BUSCOs (S)
+	0	Complete and duplicated BUSCOs (D)
+	46	Fragmented BUSCOs (F)
+	25	Missing BUSCOs (M)
+	124	Total BUSCO groups searched
+
+Assembly Statistics:
+	1	Number of scaffolds
+	1	Number of contigs
+	1266954	Total length
+	0.000%	Percent gaps
+	1 MB	Scaffold N50
+	1 MB	Contigs N50
+```
+
 ### Step 2: Run multiple polishing tools:
 
 Align nanopore reads to unpolished assembly
@@ -113,11 +144,17 @@ docker run -it --rm -u `id -u`:`id -g` \
     -o /private/groups/patenlab/mira/wWil_polishing/polished_assemblies/medaka/
 
 ```
-- Racon + Medaka nanopore polishing
-- Racon + Medaka nanopore polishing + pilon
-- Racon + Medaka nanopore polishing + polypolish  
-- Pilon
-- PolyPolish
+Racon + Homopolish polishing
+
+```
+conda activate homopolish
+
+python3 /private/home/mmastora/progs/homopolish/homopolish.py polish \
+    -a /private/groups/patenlab/mira/wWil_polishing/polished_assemblies/wWil_Nanopore_assembly.Racon.fasta \
+    -s /private/home/mmastora/progs/homopolish/bacteria.msh \
+    -m /private/home/mmastora/progs/homopolish/R10.3.pkl \
+    -o /private/groups/patenlab/mira/wWil_polishing/polished_assemblies/wWil_Nanopore_assembly.Racon.homopolish.fasta
+```
 
 ### Step 3: Compare QC metrics across different polishing tools
 
@@ -135,5 +172,60 @@ Racon + medaka: another .6 QV improvement
 docker run -it -u `id -u`:`id -g` -v /private/groups:/private/groups -v /private/groups/patenlab/mira/wWil_polishing/merqury/Racon_Medaka_k15:/data juklucas/hpp_merqury:latest merqury.sh /private/groups/patenlab/mira/wWil_polishing/data/illumina/wWil.ilm_40x.k15.meryl /private/groups/patenlab/mira/wWil_polishing/polished_assemblies/medaka/consensus.fasta wWil_Racon_Medaka_merqury_k15
 
 wWil_Wolbachia_chromosome       54950   1268440 25.3045 0.00294813
+```
+Racon + homopolish:
+```
+docker run -it -u `id -u`:`id -g` -v /private/groups:/private/groups -v /private/groups/patenlab/mira/wWil_polishing/merqury/Racon_homopolish_k15:/data juklucas/hpp_merqury:latest merqury.sh /private/groups/patenlab/mira/wWil_polishing/data/illumina/wWil.ilm_40x.k15.meryl /private/groups/patenlab/mira/wWil_polishing/polished_assemblies/wWil_Nanopore_assembly.Racon.homopolish.fasta/wWil_Nanopore_assembly.Racon.homopolish.fasta wWil_Racon_homopolish_merqury_k15
+
+```
+
+#### Busco
+
+Racon only
+```
+docker run --rm -u `id -u`:`id -g` \
+    -v /private/groups:/private/groups \
+    -v /private/groups/patenlab/mira/wWil_polishing/busco/Racon:/busco_wd \
+    ezlabgva/busco:v5.7.0_cv1 busco \
+    --mode genome \
+    -i /private/groups/patenlab/mira/wWil_polishing/busco/Racon/wWil_Nanopore_assembly.Racon.fasta \
+    -c 16 \
+    -l bacteria_odb10
+
+    ---------------------------------------------------
+    |Results from dataset bacteria_odb10               |
+    ---------------------------------------------------
+    |C:60.5%[S:60.5%,D:0.0%],F:25.8%,M:13.7%,n:124     |
+    |75    Complete BUSCOs (C)                         |
+    |75    Complete and single-copy BUSCOs (S)         |
+    |0    Complete and duplicated BUSCOs (D)           |
+    |32    Fragmented BUSCOs (F)                       |
+    |17    Missing BUSCOs (M)                          |
+    |124    Total BUSCO groups searched                |
+    ---------------------------------------------------
+```
+
+Racon + Medaka
+```
+docker run --rm -u `id -u`:`id -g` \
+    -v /private/groups:/private/groups \
+    -v /private/groups/patenlab/mira/wWil_polishing/busco/Racon_Medaka:/busco_wd \
+    ezlabgva/busco:v5.7.0_cv1 busco \
+    --mode genome \
+    -i /private/groups/patenlab/mira/wWil_polishing/polished_assemblies/medaka/consensus.fasta \
+    -c 16 -f \
+    -l bacteria_odb10
+
+---------------------------------------------------
+|Results from dataset bacteria_odb10               |
+---------------------------------------------------
+|C:77.4%[S:77.4%,D:0.0%],F:10.5%,M:12.1%,n:124     |
+|96    Complete BUSCOs (C)                         |
+|96    Complete and single-copy BUSCOs (S)         |
+|0    Complete and duplicated BUSCOs (D)           |
+|13    Fragmented BUSCOs (F)                       |
+|15    Missing BUSCOs (M)                          |
+|124    Total BUSCO groups searched                |
+---------------------------------------------------
 ```
 ## 2. Check for any SVs that need polishing
