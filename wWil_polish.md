@@ -156,6 +156,43 @@ python3 /private/home/mmastora/progs/homopolish/homopolish.py polish \
     -o /private/groups/patenlab/mira/wWil_polishing/polished_assemblies/wWil_Nanopore_assembly.Racon.homopolish.fasta
 ```
 
+Pilon only short read polishing
+
+```
+java -Xmx16G -jar /private/home/mmastora/progs/pilon-1.24.jar \
+    --genome /private/groups/patenlab/mira/wWil_polishing/data/wWil_Nanopore_assembly.fasta \
+    --bam /private/groups/russelllab/cade/wwil_polishing/JW18wWil0703A_wWil-only.bam \
+    --output wWil_Nanopore_assembly.pilon.polished \
+    --outdir /private/groups/patenlab/mira/wWil_polishing/polished_assemblies/
+```
+
+Racon+Medaka+Pilon
+```
+# bwa index
+docker run --rm -u `id -u`:`id -g` \
+    -v /private/groups/patenlab/mira:/private/groups/patenlab/mira \
+    quay.io/masri2019/hpp_bwa:latest bwa index -p \
+    /private/groups/patenlab/mira/wWil_polishing/polished_assemblies/medaka/consensus.fasta \
+    /private/groups/patenlab/mira/wWil_polishing/polished_assemblies/medaka/consensus.fasta
+
+# align illumina reads to racon+medaka polished assembly
+docker run -u `id -u`:`id -g` \
+    -v /private/groups/patenlab/mira:/private/groups/patenlab/mira \
+    quay.io/masri2019/hpp_bwa:latest bwa mem -t32 \
+    /private/groups/patenlab/mira/wWil_polishing/polished_assemblies/medaka/consensus.fasta \
+    /private/groups/patenlab/mira/wWil_polishing/data/illumina/JW18wWil0703A_wWil-only_R1.fastq.gz \
+    /private/groups/patenlab/mira/wWil_polishing/data/illumina/JW18wWil0703A_wWil-only_R2.fastq.gz \
+    | samtools view -b -h \
+    > /private/groups/patenlab/mira/wWil_polishing/data/illumina/wWil_ilm.bwa.Racon_Medaka_polished.bam
+
+# run pilon
+java -Xmx16G -jar /private/home/mmastora/progs/pilon-1.24.jar \
+    --genome /private/groups/patenlab/mira/wWil_polishing/polished_assemblies/medaka/consensus.fasta \
+    --bam /private/groups/patenlab/mira/wWil_polishing/data/illumina/wWil_ilm.bwa.Racon_Medaka_polished.srt.bam\
+    --output wWil_Nanopore_assembly.racon.medaka.pilon.polished \
+    --outdir /private/groups/patenlab/mira/wWil_polishing/polished_assemblies/
+```
+
 ### Step 3: Compare QC metrics across different polishing tools
 
 #### QV with merqury
@@ -175,8 +212,27 @@ wWil_Wolbachia_chromosome       54950   1268440 25.3045 0.00294813
 ```
 Racon + homopolish:
 ```
-docker run -it -u `id -u`:`id -g` -v /private/groups:/private/groups -v /private/groups/patenlab/mira/wWil_polishing/merqury/Racon_homopolish_k15:/data juklucas/hpp_merqury:latest merqury.sh /private/groups/patenlab/mira/wWil_polishing/data/illumina/wWil.ilm_40x.k15.meryl /private/groups/patenlab/mira/wWil_polishing/polished_assemblies/wWil_Nanopore_assembly.Racon.homopolish.fasta/wWil_Nanopore_assembly.Racon.homopolish.fasta wWil_Racon_homopolish_merqury_k15
+docker run -it -u `id -u`:`id -g` -v /private/groups:/private/groups -v /private/groups/patenlab/mira/wWil_polishing/merqury/Racon_homopolish_k15:/data juklucas/hpp_merqury:latest merqury.sh /private/groups/patenlab/mira/wWil_polishing/data/illumina/wWil.ilm_40x.k15.meryl /private/groups/patenlab/mira/wWil_polishing/polished_assemblies/wWil_Nanopore_assembly.Racon.homopolish.fasta/wWil_Nanopore_assembly_homopolished.fasta wWil_Racon_homopolish_merqury_k15
 
+cat wWil_Racon_homopolish_merqury_k15.qv
+wWil_Nanopore_assembly_homopolished     55086   1265680 25.2839 0.00296216
+```
+
+Pilon only
+```
+docker run -it -u `id -u`:`id -g` -v /private/groups:/private/groups -v /private/groups/patenlab/mira/wWil_polishing/merqury/Pilon_k15:/data juklucas/hpp_merqury:latest merqury.sh /private/groups/patenlab/mira/wWil_polishing/data/illumina/wWil.ilm_40x.k15.meryl /private/groups/patenlab/mira/wWil_polishing/polished_assemblies/wWil_Nanopore_assembly.pilon.polished.fasta wWil_Pilon_merqury_k15
+
+```
+
+```
+wWil_Nanopore_assembly.pilon.polished   52071   1268400 25.5429 0.0027907
+```
+
+Racon+Medaka+Pilon
+```
+docker run -it -u `id -u`:`id -g` -v /private/groups:/private/groups -v /private/groups/patenlab/mira/wWil_polishing/merqury/Racon_Medaka_Pilon_k15:/data juklucas/hpp_merqury:latest merqury.sh /private/groups/patenlab/mira/wWil_polishing/data/illumina/wWil.ilm_40x.k15.meryl /private/groups/patenlab/mira/wWil_polishing/polished_assemblies/wWil_Nanopore_assembly.racon.medaka.pilon.polished.fasta wWil_racon_medaka_Pilon_merqury_k15
+
+wWil_Nanopore_assembly.racon.medaka.pilon.polished      51928   1268472 25.5553 0.00278272
 ```
 
 #### Busco
@@ -228,4 +284,81 @@ docker run --rm -u `id -u`:`id -g` \
 |124    Total BUSCO groups searched                |
 ---------------------------------------------------
 ```
+
+Racon + homopolish
+```
+docker run --rm -u `id -u`:`id -g` \
+    -v /private/groups:/private/groups \
+    -v /private/groups/patenlab/mira/wWil_polishing/busco/Racon_homopolish:/busco_wd \
+    ezlabgva/busco:v5.7.0_cv1 busco \
+    --mode genome \
+    -i /private/groups/patenlab/mira/wWil_polishing/polished_assemblies/wWil_Nanopore_assembly.Racon.homopolish.fasta/wWil_Nanopore_assembly_homopolished.fasta \
+    -c 16 -f \
+    -l bacteria_odb10
+
+---------------------------------------------------
+|Results from dataset bacteria_odb10               |
+---------------------------------------------------
+|C:83.1%[S:83.1%,D:0.0%],F:5.6%,M:11.3%,n:124      |
+|103    Complete BUSCOs (C)                        |
+|103    Complete and single-copy BUSCOs (S)        |
+|0    Complete and duplicated BUSCOs (D)           |
+|7    Fragmented BUSCOs (F)                        |
+|14    Missing BUSCOs (M)                          |
+|124    Total BUSCO groups searched                |
+---------------------------------------------------
+```
+
+Pilon only
+```
+docker run --rm -u `id -u`:`id -g` \
+    -v /private/groups:/private/groups \
+    -v /private/groups/patenlab/mira/wWil_polishing/busco/Pilon:/busco_wd \
+    ezlabgva/busco:v5.7.0_cv1 busco \
+    --mode genome \
+    -i /private/groups/patenlab/mira/wWil_polishing/polished_assemblies/wWil_Nanopore_assembly.pilon.polished.fasta \
+    -c 16 -f \
+    -l bacteria_odb10
+
+
+    ---------------------------------------------------
+    |Results from dataset bacteria_odb10               |
+    ---------------------------------------------------
+    |C:83.9%[S:83.9%,D:0.0%],F:4.8%,M:11.3%,n:124      |
+    |104    Complete BUSCOs (C)                        |
+    |104    Complete and single-copy BUSCOs (S)        |
+    |0    Complete and duplicated BUSCOs (D)           |
+    |6    Fragmented BUSCOs (F)                        |
+    |14    Missing BUSCOs (M)                          |
+    |124    Total BUSCO groups searched                |
+    ---------------------------------------------------
+```
+
+Racon+Medaka+Pilon
+```
+docker run --rm -u `id -u`:`id -g` \
+    -v /private/groups:/private/groups \
+    -v /private/groups/patenlab/mira/wWil_polishing/busco/Racon_Medaka_Pilon:/busco_wd \
+    ezlabgva/busco:v5.7.0_cv1 busco \
+    --mode genome \
+    -i /private/groups/patenlab/mira/wWil_polishing/polished_assemblies/wWil_Nanopore_assembly.racon.medaka.pilon.polished.fasta \
+    -c 16 -f \
+    -l bacteria_odb10
+
+```
+
+```
+---------------------------------------------------
+  |Results from dataset bacteria_odb10               |
+  ---------------------------------------------------
+  |C:82.3%[S:82.3%,D:0.0%],F:6.5%,M:11.2%,n:124      |
+  |102    Complete BUSCOs (C)                        |
+  |102    Complete and single-copy BUSCOs (S)        |
+  |0    Complete and duplicated BUSCOs (D)           |
+  |8    Fragmented BUSCOs (F)                        |
+  |14    Missing BUSCOs (M)                          |
+  |124    Total BUSCO groups searched                |
+  ---------------------------------------------------
+```
+
 ## 2. Check for any SVs that need polishing
