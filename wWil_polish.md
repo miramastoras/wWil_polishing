@@ -193,6 +193,66 @@ java -Xmx16G -jar /private/home/mmastora/progs/pilon-1.24.jar \
     --outdir /private/groups/patenlab/mira/wWil_polishing/polished_assemblies/
 ```
 
+
+Racon+homopolish+Pilon
+```
+# bwa index
+docker run --rm -u `id -u`:`id -g` \
+    -v /private/groups/patenlab/mira:/private/groups/patenlab/mira \
+    quay.io/masri2019/hpp_bwa:latest bwa index -p \
+    /private/groups/patenlab/mira/wWil_polishing/polished_assemblies/wWil_Nanopore_assembly.Racon.homopolish.fasta/wWil_Nanopore_assembly_homopolished.fasta \
+    /private/groups/patenlab/mira/wWil_polishing/polished_assemblies/wWil_Nanopore_assembly.Racon.homopolish.fasta/wWil_Nanopore_assembly_homopolished.fasta
+
+# align illumina reads to racon+homopolish polished assembly
+docker run -u `id -u`:`id -g` \
+    -v /private/groups/patenlab/mira:/private/groups/patenlab/mira \
+    quay.io/masri2019/hpp_bwa:latest bwa mem -t32 \
+    /private/groups/patenlab/mira/wWil_polishing/polished_assemblies/wWil_Nanopore_assembly.Racon.homopolish.fasta/wWil_Nanopore_assembly_homopolished.fasta \
+    /private/groups/patenlab/mira/wWil_polishing/data/illumina/JW18wWil0703A_wWil-only_R1.fastq.gz \
+    /private/groups/patenlab/mira/wWil_polishing/data/illumina/JW18wWil0703A_wWil-only_R2.fastq.gz \
+    | samtools view -b -h \
+    > /private/groups/patenlab/mira/wWil_polishing/data/illumina/wWil_ilm.bwa.Racon_homopolish_polished.bam
+
+# run pilon
+java -Xmx16G -jar /private/home/mmastora/progs/pilon-1.24.jar \
+    --genome /private/groups/patenlab/mira/wWil_polishing/polished_assemblies/wWil_Nanopore_assembly.Racon.homopolish.fasta/wWil_Nanopore_assembly_homopolished.fasta \
+    --bam /private/groups/patenlab/mira/wWil_polishing/data/illumina/wWil_ilm.bwa.Racon_homopolish_polished.srt.bam \
+    --output wWil_Nanopore_assembly.racon.homopolish.pilon.polished \
+    --outdir /private/groups/patenlab/mira/wWil_polishing/polished_assemblies/
+```
+
+
+Pilon x 2
+```
+# bwa index
+docker run --rm -u `id -u`:`id -g` \
+    -v /private/groups/patenlab/mira:/private/groups/patenlab/mira \
+    quay.io/masri2019/hpp_bwa:latest bwa index -p \
+    /private/groups/patenlab/mira/wWil_polishing/polished_assemblies/wWil_Nanopore_assembly.pilon.polished.fasta \
+    /private/groups/patenlab/mira/wWil_polishing/polished_assemblies/wWil_Nanopore_assembly.pilon.polished.fasta
+
+# align illumina reads to pilon polished assembly
+docker run -u `id -u`:`id -g` \
+    -v /private/groups/patenlab/mira:/private/groups/patenlab/mira \
+    quay.io/masri2019/hpp_bwa:latest bwa mem -t32 \
+    /private/groups/patenlab/mira/wWil_polishing/polished_assemblies/wWil_Nanopore_assembly.pilon.polished.fasta \
+    /private/groups/patenlab/mira/wWil_polishing/data/illumina/JW18wWil0703A_wWil-only_R1.fastq.gz \
+    /private/groups/patenlab/mira/wWil_polishing/data/illumina/JW18wWil0703A_wWil-only_R2.fastq.gz \
+    | samtools view -b -h \
+    > /private/groups/patenlab/mira/wWil_polishing/data/illumina/wWil_ilm.bwa.pilon_polished.bam
+
+samtools sort /private/groups/patenlab/mira/wWil_polishing/data/illumina/wWil_ilm.bwa.pilon_polished.bam > /private/groups/patenlab/mira/wWil_polishing/data/illumina/wWil_ilm.bwa.pilon_polished.srt.bam
+
+samtools index /private/groups/patenlab/mira/wWil_polishing/data/illumina/wWil_ilm.bwa.pilon_polished.srt.bam
+
+# run pilon
+java -Xmx16G -jar /private/home/mmastora/progs/pilon-1.24.jar \
+    --genome /private/groups/patenlab/mira/wWil_polishing/polished_assemblies/wWil_Nanopore_assembly.pilon.polished.fasta \
+    --bam /private/groups/patenlab/mira/wWil_polishing/data/illumina/wWil_ilm.bwa.pilon_polished.srt.bam \
+    --output wWil_Nanopore_assembly.pilonx2.polished \
+    --outdir /private/groups/patenlab/mira/wWil_polishing/polished_assemblies/
+```
+
 ### Step 3: Compare QC metrics across different polishing tools
 
 #### QV with merqury
@@ -222,10 +282,12 @@ Pilon only
 ```
 docker run -it -u `id -u`:`id -g` -v /private/groups:/private/groups -v /private/groups/patenlab/mira/wWil_polishing/merqury/Pilon_k15:/data juklucas/hpp_merqury:latest merqury.sh /private/groups/patenlab/mira/wWil_polishing/data/illumina/wWil.ilm_40x.k15.meryl /private/groups/patenlab/mira/wWil_polishing/polished_assemblies/wWil_Nanopore_assembly.pilon.polished.fasta wWil_Pilon_merqury_k15
 
+wWil_Nanopore_assembly.pilon.polished   52071   1268400 25.5429 0.0027907
 ```
 
+Pilon x 2
 ```
-wWil_Nanopore_assembly.pilon.polished   52071   1268400 25.5429 0.0027907
+docker run -it -u `id -u`:`id -g` -v /private/groups:/private/groups -v /private/groups/patenlab/mira/wWil_polishing/merqury/Pilonx2_k15:/data juklucas/hpp_merqury:latest merqury.sh /private/groups/patenlab/mira/wWil_polishing/data/illumina/wWil.ilm_40x.k15.meryl /private/groups/patenlab/mira/wWil_polishing/polished_assemblies/wWil_Nanopore_assembly.pilonx2.polished.fasta wWil_Pilonx2_merqury_k15
 ```
 
 Racon+Medaka+Pilon
@@ -235,6 +297,11 @@ docker run -it -u `id -u`:`id -g` -v /private/groups:/private/groups -v /private
 wWil_Nanopore_assembly.racon.medaka.pilon.polished      51928   1268472 25.5553 0.00278272
 ```
 
+Racon+homopolish+pilon
+```
+docker run -it -u `id -u`:`id -g` -v /private/groups:/private/groups -v /private/groups/patenlab/mira/wWil_polishing/merqury/Racon_homopolish_Pilon_k15:/data juklucas/hpp_merqury:latest merqury.sh /private/groups/patenlab/mira/wWil_polishing/data/illumina/wWil.ilm_40x.k15.meryl /private/groups/patenlab/mira/wWil_polishing/polished_assemblies/wWil_Nanopore_assembly.racon.homopolish.pilon.polished.fasta wWil_racon_homopolish_Pilon_merqury_k15
+
+```
 #### Busco
 
 Racon only
@@ -334,6 +401,19 @@ docker run --rm -u `id -u`:`id -g` \
     ---------------------------------------------------
 ```
 
+Pilon x 2
+```
+docker run --rm -u `id -u`:`id -g` \
+    -v /private/groups:/private/groups \
+    -v /private/groups/patenlab/mira/wWil_polishing/busco/Pilonx2:/busco_wd \
+    ezlabgva/busco:v5.7.0_cv1 busco \
+    --mode genome \
+    -i /private/groups/patenlab/mira/wWil_polishing/polished_assemblies/wWil_Nanopore_assembly.pilonx2.polished.fasta \
+    -c 16 -f \
+    -l bacteria_odb10
+
+```
+
 Racon+Medaka+Pilon
 ```
 docker run --rm -u `id -u`:`id -g` \
@@ -361,4 +441,42 @@ docker run --rm -u `id -u`:`id -g` \
   ---------------------------------------------------
 ```
 
-## 2. Check for any SVs that need polishing
+Racon+homopolish+Pilon
+```
+docker run --rm -u `id -u`:`id -g` \
+    -v /private/groups:/private/groups \
+    -v /private/groups/patenlab/mira/wWil_polishing/busco/Racon_homopolish_Pilon:/busco_wd \
+    ezlabgva/busco:v5.7.0_cv1 busco \
+    --mode genome \
+    -i /private/groups/patenlab/mira/wWil_polishing/polished_assemblies/wWil_Nanopore_assembly.racon.homopolish.pilon.polished.fasta \
+    -c 16 -f \
+    -l bacteria_odb10
+```
+
+```
+---------------------------------------------------
+|Results from dataset bacteria_odb10               |
+---------------------------------------------------
+|C:83.1%[S:83.1%,D:0.0%],F:5.6%,M:11.3%,n:124      |
+|103    Complete BUSCOs (C)                        |
+|103    Complete and single-copy BUSCOs (S)        |
+|0    Complete and duplicated BUSCOs (D)           |
+|7    Fragmented BUSCOs (F)                        |
+|14    Missing BUSCOs (M)                          |
+|124    Total BUSCO groups searched                |
+---------------------------------------------------
+```
+
+
+Align nanopore reads to pilonx1 polished assembly to look in IGV
+
+```
+docker run --rm -u `id -u`:`id -g` \
+    -v /private/groups:/private/groups \
+    mobinasri/long_read_aligner:v0.3.3 \
+    minimap2 -ax map-ont -t 14 \
+    /private/groups/patenlab/mira/wWil_polishing/polished_assemblies/wWil_Nanopore_assembly.pilon.polished.fasta \
+    /private/groups/patenlab/mira/wWil_polishing/data/nanopore/Wwil_nanopore.all.fastq.gz \
+    | samtools view -bh \
+    > /private/groups/patenlab/mira/wWil_polishing/data/nanopore/Wwil.R10.mm2.wWil_pilon_polished.bam
+```
