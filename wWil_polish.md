@@ -9,7 +9,6 @@ Spreadsheet of results: https://docs.google.com/spreadsheets/d/1Rbb5gen7m2lebTOj
 
 Slides: https://docs.google.com/presentation/d/1uRFTi6YXE-Jekr8PCdXKE4QVoxRLXadJIZi0G_wNA-U/edit#slide=id.g2cb56d0e0f1_0_90
 
-## 1. Small variant polishing (SNP and INDELs <50bp)
 
 ### Step 1: Establish assembly QC metrics on unpolished assembly
 
