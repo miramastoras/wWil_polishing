@@ -89,9 +89,7 @@ docker run --rm -u `id -u`:`id -g` \
     -i /private/groups/patenlab/mira/wWil_polishing/data/wWil_Nanopore_assembly.fasta \
     -c 16 \
     -l bacteria_odb10
-```
-Results:
-```
+
 ***** Results: *****
 
 	C:42.7%[S:42.7%,D:0.0%],F:37.1%,M:20.2%,n:124
@@ -109,6 +107,32 @@ Assembly Statistics:
 	0.000%	Percent gaps
 	1 MB	Scaffold N50
 	1 MB	Contigs N50
+```
+
+more specific busco database:
+```
+docker run --rm -u `id -u`:`id -g` \
+    -v /private/groups:/private/groups \
+    -v /private/groups/patenlab/mira/wWil_polishing/busco_rickettsiales_odb10/unpolished:/busco_wd \
+    ezlabgva/busco:v5.7.0_cv1 busco \
+    --mode genome \
+    -i /private/groups/patenlab/mira/wWil_polishing/data/wWil_Nanopore_assembly.fasta \
+    -c 16 \
+    -f \
+    -l rickettsiales_odb10
+
+
+    ---------------------------------------------------
+    |Results from dataset rickettsiales_odb10          |
+    ---------------------------------------------------
+    |C:55.2%[S:55.2%,D:0.0%],F:22.8%,M:22.0%,n:364     |
+    |201    Complete BUSCOs (C)                        |
+    |201    Complete and single-copy BUSCOs (S)        |
+    |0    Complete and duplicated BUSCOs (D)           |
+    |83    Fragmented BUSCOs (F)                       |
+    |80    Missing BUSCOs (M)                          |
+    |364    Total BUSCO groups searched                |
+    ---------------------------------------------------
 ```
 
 ### Step 2: Run multiple polishing tools:
@@ -331,6 +355,28 @@ docker run --rm -u `id -u`:`id -g` \
     |17    Missing BUSCOs (M)                          |
     |124    Total BUSCO groups searched                |
     ---------------------------------------------------
+
+docker run --rm -u `id -u`:`id -g` \
+    -v /private/groups:/private/groups \
+    -v /private/groups/patenlab/mira/wWil_polishing/busco_rickettsiales_odb10/Racon:/busco_wd \
+    ezlabgva/busco:v5.7.0_cv1 busco \
+    --mode genome \
+    -i /private/groups/patenlab/mira/wWil_polishing/polished_assemblies/wWil_Nanopore_assembly.Racon.fasta \
+    -f \
+    -c 16 \
+    -l rickettsiales_odb10
+
+    ---------------------------------------------------
+    |Results from dataset rickettsiales_odb10          |
+    ---------------------------------------------------
+    |C:75.5%[S:75.5%,D:0.0%],F:15.1%,M:9.4%,n:364      |
+    |275    Complete BUSCOs (C)                        |
+    |275    Complete and single-copy BUSCOs (S)        |
+    |0    Complete and duplicated BUSCOs (D)           |
+    |55    Fragmented BUSCOs (F)                       |
+    |34    Missing BUSCOs (M)                          |
+    |364    Total BUSCO groups searched                |
+    ---------------------------------------------------
 ```
 
 Racon + Medaka
@@ -355,6 +401,28 @@ docker run --rm -u `id -u`:`id -g` \
 |15    Missing BUSCOs (M)                          |
 |124    Total BUSCO groups searched                |
 ---------------------------------------------------
+
+
+docker run --rm -u `id -u`:`id -g` \
+    -v /private/groups:/private/groups \
+    -v /private/groups/patenlab/mira/wWil_polishing/busco_rickettsiales_odb10/Racon_Medaka:/busco_wd \
+    ezlabgva/busco:v5.7.0_cv1 busco \
+    --mode genome \
+    -i /private/groups/patenlab/mira/wWil_polishing/polished_assemblies/medaka/consensus.fasta \
+    -c 16 -f \
+    -l rickettsiales_odb10
+
+    ---------------------------------------------------
+    |Results from dataset rickettsiales_odb10          |
+    ---------------------------------------------------
+    |C:93.4%[S:93.4%,D:0.0%],F:3.6%,M:3.0%,n:364       |
+    |340    Complete BUSCOs (C)                        |
+    |340    Complete and single-copy BUSCOs (S)        |
+    |0    Complete and duplicated BUSCOs (D)           |
+    |13    Fragmented BUSCOs (F)                       |
+    |11    Missing BUSCOs (M)                          |
+    |364    Total BUSCO groups searched                |
+    ---------------------------------------------------
 ```
 
 Racon + homopolish
@@ -379,6 +447,27 @@ docker run --rm -u `id -u`:`id -g` \
 |14    Missing BUSCOs (M)                          |
 |124    Total BUSCO groups searched                |
 ---------------------------------------------------
+
+docker run --rm -u `id -u`:`id -g` \
+    -v /private/groups:/private/groups \
+    -v /private/groups/patenlab/mira/wWil_polishing/busco_rickettsiales_odb10/Racon_homopolish:/busco_wd \
+    ezlabgva/busco:v5.7.0_cv1 busco \
+    --mode genome \
+    -i /private/groups/patenlab/mira/wWil_polishing/polished_assemblies/wWil_Nanopore_assembly.Racon.homopolish.fasta/wWil_Nanopore_assembly_homopolished.fasta \
+    -c 16 -f \
+    -l rickettsiales_odb10
+
+        ---------------------------------------------------
+        |Results from dataset rickettsiales_odb10          |
+        ---------------------------------------------------
+        |C:98.4%[S:98.4%,D:0.0%],F:0.8%,M:0.8%,n:364       |
+        |358    Complete BUSCOs (C)                        |
+        |358    Complete and single-copy BUSCOs (S)        |
+        |0    Complete and duplicated BUSCOs (D)           |
+        |3    Fragmented BUSCOs (F)                        |
+        |3    Missing BUSCOs (M)                           |
+        |364    Total BUSCO groups searched                |
+        ---------------------------------------------------
 ```
 
 Pilon only
@@ -404,6 +493,27 @@ docker run --rm -u `id -u`:`id -g` \
     |14    Missing BUSCOs (M)                          |
     |124    Total BUSCO groups searched                |
     ---------------------------------------------------
+
+docker run --rm -u `id -u`:`id -g` \
+    -v /private/groups:/private/groups \
+    -v /private/groups/patenlab/mira/wWil_polishing/busco_rickettsiales_odb10/Pilon:/busco_wd \
+    ezlabgva/busco:v5.7.0_cv1 busco \
+    --mode genome \
+    -i /private/groups/patenlab/mira/wWil_polishing/polished_assemblies/wWil_Nanopore_assembly.pilon.polished.fasta \
+    -c 16 -f \
+    -l rickettsiales_odb10
+
+---------------------------------------------------
+|Results from dataset rickettsiales_odb10          |
+---------------------------------------------------
+|C:99.5%[S:99.5%,D:0.0%],F:0.0%,M:0.5%,n:364       |
+|362    Complete BUSCOs (C)                        |
+|362    Complete and single-copy BUSCOs (S)        |
+|0    Complete and duplicated BUSCOs (D)           |
+|0    Fragmented BUSCOs (F)                        |
+|2    Missing BUSCOs (M)                           |
+|364    Total BUSCO groups searched                |
+---------------------------------------------------
 ```
 
 Pilon x 2
@@ -417,6 +527,38 @@ docker run --rm -u `id -u`:`id -g` \
     -c 16 -f \
     -l bacteria_odb10
 
+---------------------------------------------------
+ |Results from dataset bacteria_odb10               |
+ ---------------------------------------------------
+ |C:83.9%[S:83.9%,D:0.0%],F:4.8%,M:11.3%,n:124      |
+ |104    Complete BUSCOs (C)                        |
+ |104    Complete and single-copy BUSCOs (S)        |
+ |0    Complete and duplicated BUSCOs (D)           |
+ |6    Fragmented BUSCOs (F)                        |
+ |14    Missing BUSCOs (M)                          |
+ |124    Total BUSCO groups searched                |
+ ---------------------------------------------------
+
+ docker run --rm -u `id -u`:`id -g` \
+     -v /private/groups:/private/groups \
+     -v /private/groups/patenlab/mira/wWil_polishing/busco_rickettsiales_odb10/Pilonx2:/busco_wd \
+     ezlabgva/busco:v5.7.0_cv1 busco \
+     --mode genome \
+     -i /private/groups/patenlab/mira/wWil_polishing/polished_assemblies/wWil_Nanopore_assembly.pilonx2.polished.fasta \
+     -c 16 -f \
+     -l rickettsiales_odb10
+
+---------------------------------------------------
+|Results from dataset rickettsiales_odb10          |
+---------------------------------------------------
+|C:99.5%[S:99.5%,D:0.0%],F:0.0%,M:0.5%,n:364       |
+|362    Complete BUSCOs (C)                        |
+|362    Complete and single-copy BUSCOs (S)        |
+|0    Complete and duplicated BUSCOs (D)           |
+|0    Fragmented BUSCOs (F)                        |
+|2    Missing BUSCOs (M)                           |
+|364    Total BUSCO groups searched                |
+---------------------------------------------------
 ```
 
 Racon+Medaka+Pilon
@@ -430,9 +572,6 @@ docker run --rm -u `id -u`:`id -g` \
     -c 16 -f \
     -l bacteria_odb10
 
-```
-
-```
 ---------------------------------------------------
   |Results from dataset bacteria_odb10               |
   ---------------------------------------------------
@@ -444,6 +583,27 @@ docker run --rm -u `id -u`:`id -g` \
   |14    Missing BUSCOs (M)                          |
   |124    Total BUSCO groups searched                |
   ---------------------------------------------------
+
+s
+docker run --rm -u `id -u`:`id -g` \
+    -v /private/groups:/private/groups \
+    -v /private/groups/patenlab/mira/wWil_polishing/busco_rickettsiales_odb10/Racon_Medaka_Pilon:/busco_wd \
+    ezlabgva/busco:v5.7.0_cv1 busco \
+    --mode genome \
+    -i /private/groups/patenlab/mira/wWil_polishing/polished_assemblies/wWil_Nanopore_assembly.racon.medaka.pilon.polished.fasta \
+    -c 16 -f \
+    -l rickettsiales_odb10
+---------------------------------------------------
+ |Results from dataset rickettsiales_odb10          |
+ ---------------------------------------------------
+ |C:99.5%[S:99.5%,D:0.0%],F:0.0%,M:0.5%,n:364       |
+ |362    Complete BUSCOs (C)                        |
+ |362    Complete and single-copy BUSCOs (S)        |
+ |0    Complete and duplicated BUSCOs (D)           |
+ |0    Fragmented BUSCOs (F)                        |
+ |2    Missing BUSCOs (M)                           |
+ |364    Total BUSCO groups searched                |
+ ---------------------------------------------------
 ```
 
 Racon+homopolish+Pilon
@@ -456,9 +616,7 @@ docker run --rm -u `id -u`:`id -g` \
     -i /private/groups/patenlab/mira/wWil_polishing/polished_assemblies/wWil_Nanopore_assembly.racon.homopolish.pilon.polished.fasta \
     -c 16 -f \
     -l bacteria_odb10
-```
 
-```
 ---------------------------------------------------
 |Results from dataset bacteria_odb10               |
 ---------------------------------------------------
@@ -469,6 +627,27 @@ docker run --rm -u `id -u`:`id -g` \
 |7    Fragmented BUSCOs (F)                        |
 |14    Missing BUSCOs (M)                          |
 |124    Total BUSCO groups searched                |
+---------------------------------------------------
+
+docker run --rm -u `id -u`:`id -g` \
+    -v /private/groups:/private/groups \
+    -v /private/groups/patenlab/mira/wWil_polishing/busco_rickettsiales_odb10/Racon_homopolish_Pilon:/busco_wd \
+    ezlabgva/busco:v5.7.0_cv1 busco \
+    --mode genome \
+    -i /private/groups/patenlab/mira/wWil_polishing/polished_assemblies/wWil_Nanopore_assembly.racon.homopolish.pilon.polished.fasta \
+    -c 16 -f \
+    -l rickettsiales_odb10
+
+---------------------------------------------------
+|Results from dataset rickettsiales_odb10          |
+---------------------------------------------------
+|C:99.5%[S:99.5%,D:0.0%],F:0.0%,M:0.5%,n:364       |
+|362    Complete BUSCOs (C)                        |
+|362    Complete and single-copy BUSCOs (S)        |
+|0    Complete and duplicated BUSCOs (D)           |
+|0    Fragmented BUSCOs (F)                        |
+|2    Missing BUSCOs (M)                           |
+|364    Total BUSCO groups searched                |
 ---------------------------------------------------
 ```
 
