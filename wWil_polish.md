@@ -1,8 +1,14 @@
 # Wwil nanopore assembly polishing
 
-This document contains analysis used for polishing wWil nanopore genome assembly with illumina reads
+This document contains methods used for polishing the wWil nanopore genome assembly
 
 Useful paper comparing polishing tools for microbial genome assembly: https://www.nature.com/articles/s41598-021-00178-w#Sec2
+
+
+Spreadsheet of results: https://docs.google.com/spreadsheets/d/1Rbb5gen7m2lebTOjihjBFObD-WStY5hlO6VrOfL8lvU/edit#gid=0
+
+Slides: https://docs.google.com/presentation/d/1uRFTi6YXE-Jekr8PCdXKE4QVoxRLXadJIZi0G_wNA-U/edit#slide=id.g2cb56d0e0f1_0_90
+
 ## 1. Small variant polishing (SNP and INDELs <50bp)
 
 ### Step 1: Establish assembly QC metrics on unpolished assembly
